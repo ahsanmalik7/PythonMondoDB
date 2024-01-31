@@ -1,0 +1,64 @@
+from pymongo import MongoClient
+
+# Connection string from MongoDB Atlas
+# Replace 'your_connection_string' with your actual connection string
+
+
+
+def connect_to_mongodb(connection_string, database_name):
+    client = MongoClient(connection_string)
+    db = client[database_name]
+    return client, db
+
+
+def delete_records(collection, query):
+    result = collection.delete_many(query)
+    return result.deleted_count
+
+
+def fetch_and_delete_records(collection, limit):
+    # Fetch the first 500 records
+    records_to_delete = collection.find().limit(limit)
+
+    # Create a list of the _id values to be deleted
+    ids_to_delete = [record['_id'] for record in records_to_delete]
+
+    # Delete the records
+    result = collection.delete_many({'_id': {'$in': ids_to_delete}})
+
+    return result.deleted_count
+
+
+def close_connection(client):
+    client.close()
+
+
+def main():
+    # Connection string from MongoDB Atlas
+    connection_string = 'mongodb+srv:/'
+
+    # Database and collection details
+    database_name = 'database_name'
+    collection_name = 'collection'
+
+    # Connect to MongoDB
+    client, db = connect_to_mongodb(connection_string, database_name)
+
+    # Get the collection
+    collection = db[collection_name]
+
+    # Example query: Delete the first 600 records
+    # Modify the query based on your criteria
+    query = {}  # Replace with your criteria if you have a specific field to identify the first 600 records
+    deleted_count = fetch_and_delete_records(collection, 150)
+    #
+    # # Print the number of deleted records
+    print(f"Deleted {deleted_count} records")
+
+    # Close the MongoDB connection
+    close_connection(client)
+
+
+
+if __name__ == "__main__":
+    main()
